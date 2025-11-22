@@ -1,0 +1,24 @@
+# STAGE 1: Build
+FROM eclipse-temurin:21-jdk AS builder
+
+WORKDIR /app
+COPY backend/ .
+
+RUN ./gradlew build --no-daemon
+
+# STAGE 2: Run
+FROM eclipse-temurin:21-jre
+
+WORKDIR /app
+
+# copy the JAR built from stage 1
+COPY --from=builder /app/build/libs/mahjongserver-0.0.1-SNAPSHOT.jar app.jar
+
+# expose Spring Boot default port
+EXPOSE 8080
+
+# environment variable for JWT secret
+ENV JWT_SECRET=pleasechangethis
+
+# run application with secret passed in
+CMD ["java", "-Djwt.secret=${JWT_SECRET}", "-jar", "app.jar"]
